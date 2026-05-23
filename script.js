@@ -1,5 +1,5 @@
 // ඔයාගේ Google Web App URL එක මෙහි දාන්න.
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOR4jWSBdjB5cmUpPzSw0A017nDJqkueDEptdbK3uj2rgIR82g1lqujVhT5tpGpRdCmA/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec"; 
 
 let currentUser = "";
 let serverData = { events: {thorana: true, pahan: true, koodu: true, bhakthi: true}, songs: [] };
@@ -49,7 +49,7 @@ function logout() { currentUser = ""; showScreen('login-screen'); }
 
 // ================= FETCH SERVER DATA =================
 function fetchServerData() {
-    if(SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwOR4jWSBdjB5cmUpPzSw0A017nDJqkueDEptdbK3uj2rgIR82g1lqujVhT5tpGpRdCmA/exec") return; // Skip if URL not set
+    if(SCRIPT_URL === "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec") return; // Skip if URL not set
     fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
