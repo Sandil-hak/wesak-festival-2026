@@ -77,6 +77,39 @@ function setBtnState(id, isAvailable, text) {
     }
 }
 
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQqbDrOa_58BezB9QXDs9PeLKymi3u9JCknQzDf-acmn4vHolHhVV-VRdjEEt9BfNL/exec";
+
+// තොරණේ තත්ත්වය පරීක්ෂා කිරීම
+function checkEventStatus() {
+    fetch(WEB_APP_URL)
+    .then(res => res.text())
+    .then(status => {
+        if (status === "OFF") {
+            // තොරණ ඕෆ් කරන්න (උදා: ලයිට් නිවීම)
+            console.log("Event is currently OFF");
+        } else if (status === "UNAVAILABLE") {
+            // පද්ධතිය නොමැති බව පෙන්වන්න
+            alert("අද දිනයේ තොරණ ප්‍රදර්ශනය නොකෙරේ.");
+        } else {
+            // තොරණ ක්‍රියාත්මකයි
+            console.log("Event is ON");
+        }
+    });
+}
+
+// Admin Panel එකෙන් තත්ත්වය වෙනස් කිරීම
+function updateEventStatus(newStatus) {
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify({ action: "update_status", value: newStatus })
+    });
+}
+
+// තත්පර 5කට වරක් ස්වයංක්‍රීයව පරීක්ෂා කිරීම
+setInterval(checkEventStatus, 5000);
+
+
 // ================= THORANA =================
 function startThoranaLights() {
     let p = 1;
