@@ -131,7 +131,7 @@ function toggleMute() {
     document.getElementById('mute-btn').innerText = isMuted ? "🔇 Unmute" : "🔊 Mute";
 }
 
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQqbDrOa_58BezB9QXDs9PeLKymi3u9JCknQzDf-acmn4vHolHhVV-VRdjEEt9BfNL/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec";
 
 // තොරණේ තත්ත්වය පරීක්ෂා කිරීම
 function checkEventStatus() {
