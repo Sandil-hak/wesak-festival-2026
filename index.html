@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sandil's Digital Wesak Zone</title>
+    <link rel="icon" type="image/x-icon" href="title.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ගෝලීය පසුබිම් රූපය -->
+    <div class="bg-wrapper"></div>
+    <!-- තොරණ සඳහා කළුවර වන පසුබිම -->
+    <div class="dark-overlay" id="dark-overlay"></div>
+
+    <div class="container">
+        
+        <!-- 1. ලොගින් පිටුව -->
+        <div id="login-screen" class="screen active liquid-panel">
+            <h1 class="brand-title">Sandil</h1>
+            <h2>ඩිජිටල් වෙසක් කලාපය</h2>
+            <p>ඔබගේ නම ඇතුළත් කර කලාපයට පිවිසෙන්න</p>
+            <input type="text" id="username-input" placeholder="ඔබගේ නම..." class="modern-input">
+            <button class="btn-primary" onclick="loginUser()">ඇතුළු වන්න</button>
+            <button class="btn-secondary admin-btn" onclick="showScreen('admin-login-screen')">Admin Login</button>
+        </div>
+
+        <!-- Admin Login -->
+        <div id="admin-login-screen" class="screen liquid-panel">
+            <h2>Admin පිවිසුම</h2>
+            <input type="password" id="admin-pass" placeholder="මුරපදය..." class="modern-input">
+            <button class="btn-primary" onclick="checkAdmin()">ලොග් වන්න</button>
+            <button class="btn-secondary" onclick="showScreen('login-screen')">ආපසු</button>
+        </div>
+
+        <!-- 2. ප්‍රධාන මෙනුව -->
+        <div id="dashboard-screen" class="screen liquid-panel">
+            <h2 id="welcome-text">ආයුබෝවන්!</h2>
+            <div class="menu-grid">
+                <button class="btn-menu" id="btn-thorana" onclick="showScreen('thorana-screen')">🏮 සජීවී තොරණ</button>
+                <button class="btn-menu" id="btn-pahan" onclick="showScreen('pahan-screen')">🪔 ඩිජිටල් පහන් පූජාව</button>
+                <button class="btn-menu" id="btn-koodu" onclick="showScreen('tree-screen')">🌲 වෙසක් ගස</button>
+                <button class="btn-menu" id="btn-bhakthi" onclick="showScreen('bhakthi-screen')">🎶 බැති ගී</button>
+            </div>
+            <button class="btn-secondary mt-20" onclick="logout()">ඉවත් වන්න</button>
+        </div>
+
+        <!-- 3. තොරණ පිටුව -->
+        <div id="thorana-screen" class="screen liquid-panel thorana-panel">
+            <h2>සත් සතිය තොරණ</h2>
+            <div class="thorana-wrapper">
+                <img src="thorana.jpg" alt="Thorana" class="thorana-img">
+                <!-- ස්වයංක්‍රීය ලයිට් රටා -->
+                <div class="t-light t-pattern-1" id="t-p1"></div>
+                <div class="t-light t-pattern-2" id="t-p2"></div>
+                <div class="t-light t-pattern-3" id="t-p3"></div>
+            </div>
+            
+            <div class="audio-controls">
+                <p>🎶 දැන් වාදනය වේ: සත් සතිය කවි බණ</p>
+                <button class="btn-secondary" id="mute-btn" onclick="toggleMute()">🔊 Mute</button>
+            </div>
+            <button class="btn-primary mt-20" onclick="showScreen('dashboard-screen')">ආපසු මෙනුවට</button>
+        </div>
+
+        <!-- 4. පහන් පූජාව -->
+        <div id="pahan-screen" class="screen liquid-panel">
+            <h2>ඩිජිටල් පහන් පූජාව</h2>
+            <div class="pahan-display" id="pahan-display">🪔</div>
+            <p id="pahan-msg">ඔබගේ නමින් පහනක් දල්වන්න</p>
+            <button class="btn-primary" onclick="lightMyPahan()">පහන දල්වන්න</button>
+            <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු</button>
+        </div>
+
+        <!-- 5. වෙසක් ගස -->
+        <div id="tree-screen" class="screen liquid-panel">
+            <h2>කූඩු එල්ලමු</h2>
+            <p>හිස් අත්තක් තෝරා කූඩුවක් එල්ලන්න</p>
+            <div class="tree-container" id="tree-container">
+                <!-- JS මඟින් Slots මෙහි යෙදේ -->
+            </div>
+            <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු</button>
+        </div>
+
+        <!-- 6. බැති ගී -->
+        <div id="bhakthi-screen" class="screen liquid-panel">
+            <h2>බැති ගී මඩුව</h2>
+            <p id="current-song-title">ගීත ලෝඩ් වෙමින් පවතියි...</p>
+            <audio id="bhakthi-player" controls style="width: 100%; outline:none; border-radius:10px;"></audio>
+            <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු</button>
+        </div>
+
+        <!-- 7. Admin Panel -->
+        <div id="admin-panel" class="screen liquid-panel admin-ui">
+            <h2>🛠️ Admin Control Panel</h2>
+            <p>කලාපයේ පාලනය</p>
+            <div class="admin-controls">
+                <label><input type="checkbox" id="adm-thorana" onchange="updateEventSettings()"> තොරණ සක්‍රීයයි</label>
+                <label><input type="checkbox" id="adm-pahan" onchange="updateEventSettings()"> පහන් පූජාව සක්‍රීයයි</label>
+                <label><input type="checkbox" id="adm-koodu" onchange="updateEventSettings()"> කූඩු එල්ලීම සක්‍රීයයි</label>
+                <label><input type="checkbox" id="adm-bhakthi" onchange="updateEventSettings()"> බැති ගී සක්‍රීයයි</label>
+            </div>
+            
+            <h3 style="margin-top:20px; font-size:16px;">නව ගීතයක් එක් කරන්න</h3>
+            <input type="text" id="new-song-title" placeholder="ගීතයේ නම" class="modern-input">
+            <input type="text" id="new-song-url" placeholder="MP3 URL එක" class="modern-input">
+            <button class="btn-primary" onclick="adminAddSong()">ගීතය එක් කරන්න</button>
+
+            <button class="btn-secondary mt-20" onclick="showScreen('login-screen')">Admin Logout</button>
+        </div>
+    </div>
+
+    <!-- About Us Button & Modal -->
+    <button class="about-btn" onclick="document.getElementById('about-modal').style.display='flex'">About Us</button>
+    <div id="about-modal" class="modal">
+        <div class="liquid-panel modal-content">
+            <h3>Sandil Digital Zone</br></h3>
+            <p><strong>Owner:</strong> Sandil Demika<br> </p>
+            <p><strong>Contact:</strong> sandildemika@gmail.com <br> </p>
+            <button class="btn-secondary" onclick="document.getElementById('about-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <audio id="global-thorana-audio" loop>
+        <source src="sathsathiya.mp3" type="audio/mp3">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
