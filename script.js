@@ -12,6 +12,34 @@ let isMuted = false;
 // Initial Setup
 window.onload = () => { fetchServerData(); setupTreeSlots(); };
 
+
+//
+// සර්වර් එකෙන් හැම වෙලේම රටාව චෙක් කරයි
+setInterval(() => {
+    fetch("https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec")
+    .then(res => res.text())
+    .then(pattern => {
+        // අවසාන රටාව දැන් තියෙන එකත් එක්ක වෙනස් නම් විතරක් මාරු කරන්න
+        if(currentPattern != pattern) {
+            currentPattern = pattern;
+            changeThoranaPattern(parseInt(pattern));
+        }
+    });
+}, 2000); // හැම තත්පර 2කට සැරයක්ම
+
+// Admin පැනල් එකෙන් රටාව මාරු කරන විට සර්වර් එකට යැවීම
+function adminChangePattern(val) {
+    fetch("https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec", {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify({ action: "set_pattern", value: val })
+    });
+}
+
+
+//
+
+
 function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
