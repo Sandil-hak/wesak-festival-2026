@@ -1,8 +1,8 @@
-// ඔයාගේ Google Web App URL එක මෙහි දාන්න.
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec"; 
+// 🏮 ඔයාගේ අලුත්ම Google Web App URL එක
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZRl2PmsPGWi8Mt1E9irO150OUclI-CLUAIlE5BOYm-2h0nOYZRDHx7mNAjnBnc-wwpg/exec"; 
 
 let currentUser = "";
-let serverData = { events: {thorana: true, pahan: true, koodu: true, bhakthi: true}, songs: [] };
+let serverData = { status: "ON", events: {thorana: true, pahan: true, koodu: true, bhakthi: true}, songs: [], kooduList: [] };
 let thoranaInterval;
 let currentSongIndex = 0;
 let bhakthiPlayer = document.getElementById('bhakthi-player');
@@ -10,53 +10,38 @@ let globalAudio = document.getElementById('global-thorana-audio');
 let isMuted = false;
 
 // Initial Setup
-window.onload = () => { fetchServerData(); setupTreeSlots(); };
+window.onload = () => { 
+    fetchServerData(); 
+    setupTreeSlots(); 
+    // තත්පර 5කට වරක් සර්වර් එකෙන් Status සහ අනෙකුත් සියලු දත්ත Real-time පරීක්ෂා කිරීම
+    setInterval(fetchServerData, 5000); 
+};
 
-
-//
-// සර්වර් එකෙන් හැම වෙලේම රටාව චෙක් කරයි
-setInterval(() => {
-    fetch("https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec")
-    .then(res => res.text())
-    .then(pattern => {
-        // අවසාන රටාව දැන් තියෙන එකත් එක්ක වෙනස් නම් විතරක් මාරු කරන්න
-        if(currentPattern != pattern) {
-            currentPattern = pattern;
-            changeThoranaPattern(parseInt(pattern));
-        }
-    });
-}, 2000); // හැම තත්පර 2කට සැරයක්ම
-
-// Admin පැනල් එකෙන් රටාව මාරු කරන විට සර්වර් එකට යැවීම
-function adminChangePattern(val) {
-    fetch("https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec", {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify({ action: "set_pattern", value: val })
-    });
-}
-
-
-//
-
-
+// ================= SCREEN CONTROL =================
 function showScreen(id) {
+    // තොරණ OFF කරලා නම්, තොරණ ස්ක්‍රීන් එකට යන්න නොදේ
+    if (id === 'thorana-screen' && !serverData.events.thorana) {
+        alert("සමාවන්න, තොරණ දැනට ක්‍රියා විරහිතයි.");
+        return;
+    }
+
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 
     // Thorana background dim & Audio logic
     const darkOverlay = document.getElementById('dark-overlay');
     if (id === 'thorana-screen') {
-        darkOverlay.classList.add('active');
+        if(darkOverlay) darkOverlay.classList.add('active');
         startThoranaLights();
         playThoranaAudio();
     } else {
-        darkOverlay.classList.remove('active');
+        if(darkOverlay) darkOverlay.classList.remove('active');
         clearInterval(thoranaInterval);
-        globalAudio.pause();
+        if(globalAudio) globalAudio.pause();
     }
 }
 
+// ================= AUTHENTICATION =================
 function loginUser() {
     const name = document.getElementById('username-input').value.trim();
     if (!name) return alert("කරුණාකර නම ඇතුළත් කරන්න.");
@@ -75,16 +60,26 @@ function loginUser() {
 
 function logout() { currentUser = ""; showScreen('login-screen'); }
 
-// ================= FETCH SERVER DATA =================
+// ================= FETCH SERVER DATA (REAL-TIME STATUS CHECK) =================
 function fetchServerData() {
-    if(SCRIPT_URL === "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec") return; // Skip if URL not set
     fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
             serverData = data;
+            
+            // 1. Global Availability (UNAVAILABLE) පරීක්ෂාව
+            if (data.status === "UNAVAILABLE") {
+                document.body.innerHTML = "<div style='text-align:center; margin-top:20%; font-family:sans-serif;'><h1 style='color:red;'>අද දිනයේ තොරණ ප්‍රදර්ශනය නොකෙරේ. 🙏</h1><p style='color:#555;'>කරුණාකර පසුව රැඳී සිටින්න.</p></div>";
+                return;
+            }
+
+            // 2. Event Locks (ON/OFF) පාලනය
             applyEventLocks();
-            setupBhakthiSongs();
-            renderTree(data.kooduList);
+            
+            // 3. අනෙකුත් දත්ත අප්ඩේට් කිරීම
+            if(data.songs && data.songs.length > 0 && serverData.songs.length === 0) setupBhakthiSongs();
+            if(data.kooduList) renderTree(data.kooduList);
+            
         }).catch(e => console.log("Fetch Error", e));
 }
 
@@ -102,23 +97,33 @@ function setBtnState(id, isAvailable, text) {
     if(btn) {
         btn.disabled = !isAvailable;
         btn.innerHTML = isAvailable ? text : `${text} <span style='color:red;font-size:12px;'>🔒 Unavailable</span>`;
+        
+        // යම් හෙයකින් පරිශීලකයා දැනටමත් OFF කරපු Screen එකක ඉන්නවා නම් ඔහුව Dashboard එකට හරවා යවයි
+        if(!isAvailable && document.getElementById(id.replace('btn-', '') + '-screen')?.classList.contains('active')) {
+            showScreen('dashboard-screen');
+        }
     }
 }
 
 // ================= THORANA =================
 function startThoranaLights() {
+    clearInterval(thoranaInterval);
     let p = 1;
     thoranaInterval = setInterval(() => {
-        document.getElementById('t-p1').className = "t-light t-pattern-1" + (p===1 || p===4 ? " light-active":"");
-        document.getElementById('t-p2').className = "t-light t-pattern-2" + (p===2 || p===5 ? " light-active":"");
-        document.getElementById('t-p3').className = "t-light t-pattern-3" + (p===3 || p===6 ? " light-active":"");
+        let p1 = document.getElementById('t-p1');
+        let p2 = document.getElementById('t-p2');
+        let p3 = document.getElementById('t-p3');
+        
+        if(p1) p1.className = "t-light t-pattern-1" + (p===1 || p===4 ? " light-active":"");
+        if(p2) p2.className = "t-light t-pattern-2" + (p===2 || p===5 ? " light-active":"");
+        if(p3) p3.className = "t-light t-pattern-3" + (p===3 || p===6 ? " light-active":"");
         p = p >= 6 ? 1 : p + 1;
     }, 800);
 }
 
 function playThoranaAudio() {
+    if(!globalAudio) return;
     if(globalAudio.readyState >= 2) {
-        // ලෝකේ කොහේ හිටියත් එකම තැනින් ඇහෙන්න සකසන 'Global Sync' ලොජික් එක
         let now = Date.now() / 1000;
         globalAudio.currentTime = now % globalAudio.duration; 
     }
@@ -126,42 +131,11 @@ function playThoranaAudio() {
 }
 
 function toggleMute() {
+    if(!globalAudio) return;
     isMuted = !isMuted;
     globalAudio.muted = isMuted;
     document.getElementById('mute-btn').innerText = isMuted ? "🔇 Unmute" : "🔊 Mute";
 }
-
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby_Tpt6je7BgNMtjidWlMApUCdP1b8DB4jNR720k14B5DhgRAGjbaYd4v02m2_EvpdJfw/exec";
-
-// තොරණේ තත්ත්වය පරීක්ෂා කිරීම
-function checkEventStatus() {
-    fetch(WEB_APP_URL)
-    .then(res => res.text())
-    .then(status => {
-        if (status === "OFF") {
-            // තොරණ ඕෆ් කරන්න (උදා: ලයිට් නිවීම)
-            console.log("Event is currently OFF");
-        } else if (status === "UNAVAILABLE") {
-            // පද්ධතිය නොමැති බව පෙන්වන්න
-            alert("අද දිනයේ තොරණ ප්‍රදර්ශනය නොකෙරේ.");
-        } else {
-            // තොරණ ක්‍රියාත්මකයි
-            console.log("Event is ON");
-        }
-    });
-}
-
-// Admin Panel එකෙන් තත්ත්වය වෙනස් කිරීම
-function updateEventStatus(newStatus) {
-    fetch(WEB_APP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify({ action: "update_status", value: newStatus })
-    });
-}
-
-// තත්පර 5කට වරක් ස්වයංක්‍රීයව පරීක්ෂා කිරීම
-setInterval(checkEventStatus, 5000);
 
 // ================= PAHAN POOJA =================
 function lightMyPahan() {
@@ -178,6 +152,7 @@ const slotsPositions = [ {t:'20%', l:'30%'}, {t:'40%', l:'70%'}, {t:'60%', l:'20
 
 function setupTreeSlots() {
     const container = document.getElementById('tree-container');
+    if(!container) return;
     container.innerHTML = "";
     slotsPositions.forEach((pos, i) => {
         let div = document.createElement('div');
@@ -192,20 +167,25 @@ function setupTreeSlots() {
 
 function renderTree(kooduList) {
     if(!kooduList) return;
+    // මුලින්ම ඔක්කොම ස්ලොට්ස් රීසෙට් කරලා ඉන්නවා සර්වර් දත්ත දාන්න කලින්
+    setupTreeSlots(); 
+    
     kooduList.forEach(k => {
         let slot = document.getElementById("koodu-" + k.slot);
         if(slot) {
             slot.className = "koodu-slot koodu-lit";
             slot.innerText = "🏮";
-            slot.onclick = null; // Disable clicking again
+            slot.onclick = null; 
         }
     });
 }
 
 function hangKoodu(index) {
     let slot = document.getElementById("koodu-" + index);
-    slot.className = "koodu-slot koodu-lit";
-    slot.innerText = "🏮";
+    if(slot) {
+        slot.className = "koodu-slot koodu-lit";
+        slot.innerText = "🏮";
+    }
     fetch(SCRIPT_URL, {
         method: 'POST', mode: 'no-cors',
         body: JSON.stringify({action: 'hang_koodu', username: currentUser, slot: index})
@@ -214,17 +194,17 @@ function hangKoodu(index) {
 
 // ================= BHAKTHI GEETHA =================
 function setupBhakthiSongs() {
-    if (serverData.songs.length === 0) return;
+    if (!bhakthiPlayer || serverData.songs.length === 0) return;
     playSong(0);
     
     bhakthiPlayer.addEventListener('ended', () => {
-        currentSongIndex = (currentSongIndex + 1) % serverData.songs.length; // Loop effect
+        currentSongIndex = (currentSongIndex + 1) % serverData.songs.length; 
         playSong(currentSongIndex);
     });
 }
 
 function playSong(index) {
-    if(!serverData.songs[index]) return;
+    if(!serverData.songs[index] || !bhakthiPlayer) return;
     document.getElementById('current-song-title').innerText = "දැන් වාදනය වේ: " + serverData.songs[index].title;
     bhakthiPlayer.src = serverData.songs[index].url;
     bhakthiPlayer.play().catch(e=>console.log("Autoplay issue"));
@@ -233,7 +213,7 @@ function playSong(index) {
 // ================= ADMIN FUNCTIONS =================
 function checkAdmin() {
     const pass = document.getElementById('admin-pass').value;
-    if (pass === "d3mika@1234") { // සරල මුරපදය
+    if (pass === "d3mika@1234") { 
         document.getElementById('adm-thorana').checked = serverData.events.thorana;
         document.getElementById('adm-pahan').checked = serverData.events.pahan;
         document.getElementById('adm-koodu').checked = serverData.events.koodu;
@@ -242,6 +222,15 @@ function checkAdmin() {
     } else {
         alert("මුරපදය වැරදියි!");
     }
+}
+
+// Admin පැනල් එකෙන් status එක (ON / OFF / UNAVAILABLE) වෙනස් කිරීමට
+function updateGlobalStatus(newStatus) {
+    fetch(SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({action: 'update_status', value: newStatus})
+    });
+    alert(`පද්ධතියේ තත්ත්වය ${newStatus} ලෙස යාවත්කාලීන කරන ලදී! ✅`);
 }
 
 function updateEventSettings() {
@@ -255,6 +244,7 @@ function updateEventSettings() {
         method: 'POST', mode: 'no-cors',
         body: JSON.stringify({action: 'update_events', events: serverData.events})
     });
+    alert("සැකසුම් සාර්ථකව සුරකින ලදී! 💾");
 }
 
 function adminAddSong() {
