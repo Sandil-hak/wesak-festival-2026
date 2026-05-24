@@ -119,7 +119,12 @@
             </div>
             <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු මෙනුවට</button>
         </div>
-
+            <div class="audio-controls">
+                <p>🎶 දැන් වාදනය වේ: සත් සතිය කවි බණ</p>
+                <button class="btn-secondary" id="mute-btn" onclick="toggleMute()">🔊 Mute</button>
+            </div>
+            <button class="btn-primary mt-20" onclick="showScreen('dashboard-screen')">ආපසු මෙනුවට</button>
+        </div>
         <!-- 8. Admin Panel -->
         <div id="admin-panel" class="screen liquid-panel admin-ui">
             <h2>🛠️ Admin Control Panel</h2>
@@ -163,6 +168,9 @@
 
     <audio id="global-thorana-audio" loop>
         <source src="sathsathiya.mp3" type="audio/mp3">
+    </audio>
+    <audio id="global-thorana-audio" loop>
+        <source src="dansalsong1.mp3" type="audio/mp3">
     </audio>
 
     <!-- 🍦 [අලුත්] දන්සල් ගෝලීය සමමුහුර්ත පසුබිම් සංගීතය සපයන Audio Tag -->
