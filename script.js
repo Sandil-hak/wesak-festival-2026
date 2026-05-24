@@ -1,5 +1,5 @@
 // 🏮 ඔයාගේ අලුත්ම Google Web App URL එක
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrk0DB-04k6M_FS9bk9cJOREyENzT3ATJsKpI6aDzYiQueGAFfKthlt8cdvBLufdRZIg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZRl2PmsPGWi8Mt1E9irO150OUclI-CLUAIlE5BOYm-2h0nOYZRDHx7mNAjnBnc-wwpg/exec"; 
 
 let currentUser = "";
 let serverData = { status: "ON", events: {thorana: true, pahan: true, koodu: true, bhakthi: true, dansala: true, flv_vanilla: true, flv_chocolate: true, flv_strawberry: true}, songs: [], kooduList: [], dansala_count: 0, current_dansala_song: "" };
