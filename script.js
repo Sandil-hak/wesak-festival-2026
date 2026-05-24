@@ -300,17 +300,3 @@ function joinDansalQueue() {
     }, 2500);
 }
 
-function showIceCreamResult(flavor) {
-    document.getElementById('dansala-screen').innerHTML = `
-        <div class="animation-box">
-            <h2 class="animate-bounce">🍦 මෙන්න ඔයාගේ ${flavor} අයිස්ක්‍රීම් එක!</h2>
-            <img src="ice-cream-img.png" class="rotating-icecream">
-        </div>`;
-}
-
-// ගෝලීය සංගීත සමමුහුර්තකරණය (Global Sync)
-function playGlobalDansalMusic() {
-    let audio = document.getElementById('global-dansal-audio');
-    // serverData.songs මගින් sync වේ
-    audio.play(); 
-}
