@@ -260,3 +260,57 @@ function adminAddSong() {
         document.getElementById('new-song-url').value = "";
     }
 }
+
+
+
+
+
+
+
+//dansala
+
+// ... (පෙර තිබූ කෝඩ් සියල්ලම මෙයට මාරු කරන්න) ...
+let dansalaCounter = 138;
+
+// දන්සල් කවුන්ටරය ලෝඩ් කිරීම
+function fetchServerData() {
+    fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+            serverData = data;
+            dansalaCounter = data.counter; // Sheet එකෙන් ගත් අගය
+            document.getElementById('live-counter').innerText = "🍦 දන්සලෙන් කාපු ගණන: " + dansalaCounter;
+            // ... අනෙකුත් දත්ත පාලනය ...
+        });
+}
+
+function joinDansalQueue() {
+    let flavor = document.getElementById('flavor-select').value;
+    // පෝලිම් ලොජික්...
+    let peopleAhead = Math.floor(Math.random() * 20) + 10; // 10-30 අතර
+    
+    // ඇනිමේෂන් එක සහ පෝලිම් අඩු වීම
+    let interval = setInterval(() => {
+        peopleAhead--;
+        if(peopleAhead <= 0) {
+            clearInterval(interval);
+            showIceCreamResult(flavor);
+            updateCounterOnSheet(); // Sheet එකේ ගණන වැඩි කිරීමට
+        }
+    }, 2500);
+}
+
+function showIceCreamResult(flavor) {
+    document.getElementById('dansala-screen').innerHTML = `
+        <div class="animation-box">
+            <h2 class="animate-bounce">🍦 මෙන්න ඔයාගේ ${flavor} අයිස්ක්‍රීම් එක!</h2>
+            <img src="ice-cream-img.png" class="rotating-icecream">
+        </div>`;
+}
+
+// ගෝලීය සංගීත සමමුහුර්තකරණය (Global Sync)
+function playGlobalDansalMusic() {
+    let audio = document.getElementById('global-dansal-audio');
+    // serverData.songs මගින් sync වේ
+    audio.play(); 
+}
