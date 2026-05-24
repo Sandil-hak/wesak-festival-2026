@@ -14,6 +14,9 @@
     <!-- තොරණ සඳහා කළුවර වන පසුබිම -->
     <div class="dark-overlay" id="dark-overlay"></div>
 
+    <!-- 🍦 [අලුත්] සජීවී දන්සල් කවුන්ටරය (දකුණු පස උඩින්ම පෙනේ) -->
+    <!-- <div id="live-counter">🍦 දන්සලෙන් කාපු ගණන: 138</div> -->
+
     <div class="container">
         
         <!-- 1. ලොගින් පිටුව -->
@@ -39,9 +42,11 @@
             <h2 id="welcome-text">ආයුබෝවන්!</h2>
             <div class="menu-grid">
                 <button class="btn-menu" id="btn-thorana" onclick="showScreen('thorana-screen')">🏮 සජීවී තොරණ</button>
-                <button class="btn-menu" id="btn-pahan" onclick="showScreen('pahan-screen')">🪔 ඩිජිටල් පහන් පූජාව</button>
+                <button class="btn-menu" id="btn-pahan" onclick="showScreen('pahan-screen')">🪔 ඩිජிட்டල් පහන් පූජාව</button>
                 <button class="btn-menu" id="btn-koodu" onclick="showScreen('tree-screen')">🌲 වෙසක් ගස</button>
                 <button class="btn-menu" id="btn-bhakthi" onclick="showScreen('bhakthi-screen')">🎶 බැති ගී</button>
+                <!-- 🍦 [අලුත්] අයිස්ක්‍රීම් දන්සල් මෙනු බොත්තම -->
+                <button class="btn-menu" id="btn-dansala" onclick="showScreen('dansala-screen')">🍦 අයිස්ක්‍රීම් දන්සල</button>
             </div>
             <button class="btn-secondary mt-20" onclick="logout()">ඉවත් වන්න</button>
         </div>
@@ -91,7 +96,35 @@
             <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු</button>
         </div>
 
-        <!-- 7. Admin Panel -->
+        <!-- 🍦 [අලුත්] 7. අයිස්ක්‍රීම් දන්සල් පිටුව -->
+        <div id="dansala-screen" class="screen liquid-panel">
+            <h2>🍦 වෙසක් අයිස්ක්‍රීම් දන්සල 🍦</h2>
+            <div id="dansala-main-content">
+                <p id="dansala-msg">ඔබ කැමති රසය (Flavor) තෝරා පෝලිමට එකතු වන්න.</p>
+                
+                <div id="dansala-select-area">
+                    <select id="flavor-select" class="modern-input">
+                        <option value="Vanilla" id="opt-vanilla">Vanilla (වැනිලා)</option>
+                        <option value="Chocolate" id="opt-chocolate">Chocolate (චොක්ලට්)</option>
+                        <option value="Strawberry" id="opt-strawberry">Strawberry (ස්ට්‍රෝබෙරි)</option>
+                    </select>
+                    <button class="btn-primary" id="dansala-join-btn" onclick="joinDansalQueue()">දන්සලෙන් අයිස්ක්‍රීම් ලබාගන්න</button>
+                </div>
+
+                <!-- කෘතිම පෝලිම් බොක්ස් එක (Artificial Queue Container) -->
+                <div id="queue-box" style="display: none;">
+                    <span id="queue-number"></span>
+                    <span id="queue-count"></span>
+                </div>
+            </div>
+            <button class="btn-secondary mt-20" onclick="showScreen('dashboard-screen')">ආපසු මෙනුවට</button>
+        </div>
+            <div class="audio-controls">
+                <p></p>
+                <button class="btn-secondary" id="mute-btn" onclick="toggleMute()">🔊 Mute</button>
+            </div>
+            
+        <!-- 8. Admin Panel -->
         <div id="admin-panel" class="screen liquid-panel admin-ui">
             <h2>🛠️ Admin Control Panel</h2>
             <p>කලාපයේ පාලනය</p>
@@ -100,6 +133,13 @@
                 <label><input type="checkbox" id="adm-pahan" onchange="updateEventSettings()"> පහන් පූජාව සක්‍රීයයි</label>
                 <label><input type="checkbox" id="adm-koodu" onchange="updateEventSettings()"> කූඩු එල්ලීම සක්‍රීයයි</label>
                 <label><input type="checkbox" id="adm-bhakthi" onchange="updateEventSettings()"> බැති ගී සක්‍රීයයි</label>
+                
+                <!-- 🍦 [අලුත්] දන්සල් සහ Flavors පාලන ස්විචයන් -->
+                <hr style="margin: 15px 0; opacity: 0.2;">
+                <label><input type="checkbox" id="adm-dansala" onchange="updateEventSettings()"> 🍦 දන්සල සක්‍රීයයි</label>
+                <label style="margin-left: 15px;"><input type="checkbox" id="adm-flv-vanilla" onchange="updateEventSettings()"> 🍦 Vanilla Flavor සක්‍රීයයි</label>
+                <label style="margin-left: 15px;"><input type="checkbox" id="adm-flv-chocolate" onchange="updateEventSettings()"> 🍦 Chocolate Flavor සක්‍රීයයි</label>
+                <label style="margin-left: 15px;"><input type="checkbox" id="adm-flv-strawberry" onchange="updateEventSettings()"> 🍦 Strawberry Flavor සක්‍රීයයි</label>
             </div>
             
             <h3 style="margin-top:20px; font-size:16px;">නව ගීතයක් එක් කරන්න</h3>
@@ -107,29 +147,34 @@
             <input type="text" id="new-song-url" placeholder="MP3 URL එක" class="modern-input">
             <button class="btn-primary" onclick="adminAddSong()">ගීතය එක් කරන්න</button>
 
+            <!-- Admin Control Panel එක ඇතුළත මේ බටන් එක දාන්න -->
+            <button onclick="updateEventSettings()" style="background-color: #4CAF50; color: white; margin-top: 10px; margin-bottom: 10px;">සැකසුම් සුරකින්න (Save Settings)</button>
+
             <button class="btn-secondary mt-20" onclick="showScreen('login-screen')">Admin Logout</button>
         </div>
     </div>    
-            <!-- Admin Control Panel එක ඇතුළත මේ බටන් එක දාන්න -->
-            <button onclick="updateEventSettings()" style="background-color: #4CAF50; color: white; margin-top: 10px; margin-bottom: 10px;">සැකසුම් සුරකින්න (Save Settings)</button>
+            
     <!-- About Us Button & Modal -->
     <button class="about-btn" onclick="document.getElementById('about-modal').style.display='flex'">About Us</button>
     <div id="about-modal" class="modal">
         <div class="liquid-panel modal-content">
-            <h3>Sandil Digital Zone</br></h3>
+            <h3>Sandil Digital Zone<br></h3>
             <p><strong>Owner:</strong> Sandil Demika<br> </p>
             <p><strong>Contact:</strong> sandildemika@gmail.com <br> </p>
             <button class="btn-secondary" onclick="document.getElementById('about-modal').style.display='none'">Close</button>
         </div>
     </div>
 
-
-    
     <audio id="global-thorana-audio" loop>
         <source src="sathsathiya.mp3" type="audio/mp3">
     </audio>
+    <audio id="global-thorana-audio" loop>
+        <source src="dansalsong1.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- 🍦 [අලුත්] දන්සල් ගෝලීය සමමුහුර්ත පසුබිම් සංගීතය සපයන Audio Tag -->
+    <audio id="global-dansala-audio" loop></audio>
 
     <script src="script.js"></script>
-    
 </body>
 </html>
