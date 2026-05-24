@@ -55,12 +55,6 @@ h2 { font-size: 1.5rem; margin-bottom: 15px; font-weight: 400; color: #ddd; }
 }
 .modern-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(255,153,0,0.3); }
 
-/* Option tags style styling helper */
-select.modern-input option {
-    background-color: #14141e;
-    color: #fff;
-}
-
 button {
     width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600;
     cursor: pointer; transition: all 0.3s ease;
@@ -107,14 +101,28 @@ button {
 .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { width: 300px; text-align: center; }
 
-/* ================= 🍦 [අලුත්] ICE CREAM DANSALA STYLES & ANIMATIONS ================= */
+
+
+/*https://script.google.com/macros/s/AKfycbxZRl2PmsPGWi8Mt1E9irO150OUclI-CLUAIlE5BOYm-2h0nOYZRDHx7mNAjnBnc-wwpg/exec */
+
+
+
+
+
+
+
+
+
+
+
+/* ================= 🍦 ICE CREAM DANSALA STYLE EXTENSIONS ================= */
 
 /* දකුණු පස ඉහළින්ම පෙනෙන සජීවී කවුන්ටරය */
 #live-counter {
     position: fixed;
     top: 15px;
     right: 15px;
-    background: rgba(20, 20, 30, 0.8);
+    background: rgba(20, 20, 30, 0.75);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -151,7 +159,8 @@ button {
     animation: textPulse 1.5s infinite;
 }
 
-/* සාර්ථකත්වයේ ඇනිමේෂන් බොක්ස් එක */
+/* ================= 🎬 DANSALA ANIMATIONS ================= */
+
 .animation-box {
     margin-top: 20px;
     animation: panelPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
