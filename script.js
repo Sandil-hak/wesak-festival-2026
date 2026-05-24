@@ -1,19 +1,13 @@
 // 🏮 ඔයාගේ අලුත්ම Google Web App URL එක
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZRl2PmsPGWi8Mt1E9irO150OUclI-CLUAIlE5BOYm-2h0nOYZRDHx7mNAjnBnc-wwpg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfLex7tOZJbB6fVxtLLoHbeGEdfpK5bfZ6KkiuijqhmU3kVbwLzfaGodvnURKnbHiCBA/exec"; 
 
 let currentUser = "";
-let serverData = { status: "ON", events: {thorana: true, pahan: true, koodu: true, bhakthi: true, dansala: true, flv_vanilla: true, flv_chocolate: true, flv_strawberry: true}, songs: [], kooduList: [], dansala_count: 0, current_dansala_song: "" };
+let serverData = { status: "ON", events: {thorana: true, pahan: true, koodu: true, bhakthi: true}, songs: [], kooduList: [] };
 let thoranaInterval;
 let currentSongIndex = 0;
 let bhakthiPlayer = document.getElementById('bhakthi-player');
 let globalAudio = document.getElementById('global-thorana-audio');
 let isMuted = false;
-
-// 🍦 [අලුත්] දන්සල් ගෝලීය විචල්‍යයන්
-let dansalaCounter = 138;
-let currentDansalaSong = "";
-let dansalaAudio = document.getElementById('global-dansala-audio');
-let isQueueActive = false;
 
 // Initial Setup
 window.onload = () => { 
@@ -30,12 +24,6 @@ function showScreen(id) {
         alert("සමාවන්න, තොරණ දැනට ක්‍රියා විරහිතයි.");
         return;
     }
-    
-    // 🍦 [අලුත්] දන්සල OFF/UNAVAILABLE කරලා නම්, දන්සල් ස්ක්‍රීන් එකට යන්න නොදේ
-    if (id === 'dansala-screen' && !serverData.events.dansala) {
-        alert("සමාවන්න, අයිස්ක්‍රීම් දන්සල දැනට ක්‍රියා විරහිතයි.");
-        return;
-    }
 
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -50,14 +38,6 @@ function showScreen(id) {
         if(darkOverlay) darkOverlay.classList.remove('active');
         clearInterval(thoranaInterval);
         if(globalAudio) globalAudio.pause();
-    }
-
-    // 🍦 [අලුත්] දන්සල් තිරයට ඇතුළු වන විට සහ පිටවන විට සිංදු සමමුහුර්තකරණ පාලනය
-    if (id === 'dansala-screen') {
-        resetDansalaUI(); // දන්සල් තිරයට එන හැම පාරම පැරණි මැසේජ් රීසෙට් කරයි
-        playDansalaAudio();
-    } else {
-        if (dansalaAudio) dansalaAudio.pause();
     }
 }
 
@@ -89,7 +69,7 @@ function fetchServerData() {
             
             // 1. Global Availability (UNAVAILABLE) පරීක්ෂාව
             if (data.status === "UNAVAILABLE") {
-                document.body.innerHTML = "<div style='text-align:center; margin-top:20%; font-family:sans-serif;'><h1 style='color:red;'>අද දිනයේ වෙසක් කලාපය ප්‍රදර්ශනය නොකෙරේ. 🙏</h1><p style='color:#555;'>කරුණාකර පසුව රැඳී සිටින්න.</p></div>";
+                document.body.innerHTML = "<div style='text-align:center; margin-top:20%; font-family:sans-serif;'><h1 style='color:red;'>අද දිනයේ තොරණ ප්‍රදර්ශනය නොකෙරේ. 🙏</h1><p style='color:#555;'>කරුණාකර පසුව රැඳී සිටින්න.</p></div>";
                 return;
             }
 
@@ -99,25 +79,6 @@ function fetchServerData() {
             // 3. අනෙකුත් දත්ත අප්ඩේට් කිරීම
             if(data.songs && data.songs.length > 0 && serverData.songs.length === 0) setupBhakthiSongs();
             if(data.kooduList) renderTree(data.kooduList);
-            
-            // 🍦 [අලුත්] සජීවීව දන්සල් කවුන්ටරය 138 සිට ඉහළට යාවත්කාලීන කිරීම
-            if (data.dansala_count !== undefined) {
-                dansalaCounter = 138 + parseInt(data.dansala_count);
-                document.getElementById('live-counter').innerText = "🍦 දන්සලෙන් කාපු ගණන: " + dansalaCounter;
-            }
-
-            // 🍦 [අලුත්] ගෝලීය සමමුහුර්ත සංගීත පාලනය (Global Sync Audio Player)
-            if (data.current_dansala_song) {
-                if (currentDansalaSong !== data.current_dansala_song) {
-                    currentDansalaSong = data.current_dansala_song;
-                    if (dansalaAudio) {
-                        dansalaAudio.src = currentDansalaSong;
-                        if (document.getElementById('dansala-screen').classList.contains('active')) {
-                            playDansalaAudio();
-                        }
-                    }
-                }
-            }
             
         }).catch(e => console.log("Fetch Error", e));
 }
@@ -129,18 +90,6 @@ function applyEventLocks() {
     setBtnState('btn-pahan', e.pahan, "🪔 ඩිජිටල් පහන් පූජාව");
     setBtnState('btn-koodu', e.koodu, "🌲 වෙසක් ගස");
     setBtnState('btn-bhakthi', e.bhakthi, "🎶 බැති ගී");
-    
-    // 🍦 [අලුත්] ප්‍රධාන මෙනුවේ දන්සල් බටන් එක Lock/Unlock කිරීම
-    setBtnState('btn-dansala', e.dansala, "🍦 අයිස්ක්‍රීම් දන්සල");
-
-    // 🍦 [අලුත්] Dropdown එක ඇතුළත Flavors සක්‍රීය/අක්‍රීය කිරීම
-    const optVanilla = document.getElementById('opt-vanilla');
-    const optChocolate = document.getElementById('opt-chocolate');
-    const optStrawberry = document.getElementById('opt-strawberry');
-    
-    if (optVanilla) optVanilla.disabled = !e.flv_vanilla;
-    if (optChocolate) optChocolate.disabled = !e.flv_chocolate;
-    if (optStrawberry) optStrawberry.disabled = !e.flv_strawberry;
 }
 
 function setBtnState(id, isAvailable, text) {
@@ -254,80 +203,6 @@ function setupBhakthiSongs() {
     });
 }
 
-// ================= 🍦 [අලුත්] ICE CREAM DANSALA COMPONENT =================
-
-function resetDansalaUI() {
-    document.getElementById('dansala-select-area').style.display = 'block';
-    document.getElementById('queue-box').style.display = 'none';
-    document.getElementById('dansala-msg').innerHTML = "ඔබ කැමති රසය (Flavor) තෝරා පෝලිමට එකතු වන්න.";
-    isQueueActive = false;
-}
-
-function playDansalaAudio() {
-    if (!dansalaAudio || !currentDansalaSong) return;
-    if (dansalaAudio.readyState >= 2) {
-        let now = Date.now() / 1000;
-        dansalaAudio.currentTime = now % dansalaAudio.duration;
-    } else {
-        dansalaAudio.addEventListener('loadedmetadata', () => {
-            let now = Date.now() / 1000;
-            dansalaAudio.currentTime = now % dansalaAudio.duration;
-        });
-    }
-    dansalaAudio.play().catch(e => console.log("Dansala audio playback blocked until interaction."));
-}
-
-function joinDansalQueue() {
-    if (isQueueActive) return;
-    isQueueActive = true;
-
-    let flavor = document.getElementById('flavor-select').value;
-    let selectArea = document.getElementById('dansala-select-area');
-    let queueBox = document.getElementById('queue-box');
-    let qNum = document.getElementById('queue-number');
-    let qCount = document.getElementById('queue-count');
-
-    selectArea.style.display = 'none';
-    queueBox.style.display = 'block';
-
-    // කෘතිම පෝලිම් අංකයක් සහ 30ට අඩු සසම්බල (Random) පෝලිම් සංඛ්‍යාවක් උත්පාදනය
-    let myQueueNum = Math.floor(Math.random() * 800) + 100;
-    let peopleAhead = Math.floor(Math.random() * 15) + 10; // 10 ත් 25 ත් අතර සසම්බල අගයක් (30ට අඩුයි)
-
-    qNum.innerText = "ඔබේ පෝලිම් අංකය: #" + myQueueNum;
-    qCount.innerText = "⏳ ඔබට ඉදිරියෙන් තව " + peopleAhead + " දෙනෙක් සිටී...";
-
-    // තත්පර 2.5න් 2.5ට පෝලිම අඩුවීමේ සජීවී ක්‍රියාවලිය
-    let queueInterval = setInterval(() => {
-        peopleAhead--;
-        if (peopleAhead > 0) {
-            qCount.innerText = "⏳ ඔබට ඉදිරියෙන් තව " + peopleAhead + " දෙනෙක් සිටී...";
-        } else {
-            clearInterval(queueInterval);
-            queueBox.style.display = 'none';
-            showIceCreamResult(flavor);
-        }
-    }, 2500);
-}
-
-function showIceCreamResult(flavor) {
-    let msgText = document.getElementById('dansala-msg');
-    
-    // ලස්සන CSS Animation එකක් සමඟ ප්‍රතිඵලය සහ නියමිත සිංහල පණිවිඩය පෙන්වීම
-    msgText.innerHTML = `
-        <div class="animation-box">
-            <h2 class="animate-bounce">🍦 මෙන්න ඔයාගේ ${flavor} අයිස්ක්‍රීම් එක!</h2>
-            <p style="color:#FFD700; font-size:18px; font-weight:bold;">දන්සලෙන් රසවිඳ සාදුකාරයක් දෙන්න!</p>
-            <div class="rotating-icecream">🍦</div>
-        </div>`;
-
-    // Google Sheet එක වෙත දත්ත යවා live කවුන්ටරය +1 කින් වැඩි කිරීම
-    fetch(SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors',
-        body: JSON.stringify({action: 'increment_dansala', username: currentUser, flavor: flavor})
-    });
-}
-
 function playSong(index) {
     if(!serverData.songs[index] || !bhakthiPlayer) return;
     document.getElementById('current-song-title').innerText = "දැන් වාදනය වේ: " + serverData.songs[index].title;
@@ -343,13 +218,6 @@ function checkAdmin() {
         document.getElementById('adm-pahan').checked = serverData.events.pahan;
         document.getElementById('adm-koodu').checked = serverData.events.koodu;
         document.getElementById('adm-bhakthi').checked = serverData.events.bhakthi;
-        
-        // 🍦 [අලුත්] Admin Panel එක ඇතුළත චෙක්බොක්ස් තත්ත්වයන් පූරණය කිරීම
-        document.getElementById('adm-dansala').checked = serverData.events.dansala || false;
-        document.getElementById('adm-flv-vanilla').checked = serverData.events.flv_vanilla || false;
-        document.getElementById('adm-flv-chocolate').checked = serverData.events.flv_chocolate || false;
-        document.getElementById('adm-flv-strawberry').checked = serverData.events.flv_strawberry || false;
-        
         showScreen('admin-panel');
     } else {
         alert("මුරපදය වැරදියි!");
@@ -370,13 +238,7 @@ function updateEventSettings() {
         thorana: document.getElementById('adm-thorana').checked,
         pahan: document.getElementById('adm-pahan').checked,
         koodu: document.getElementById('adm-koodu').checked,
-        bhakthi: document.getElementById('adm-bhakthi').checked,
-        
-        // 🍦 [අලුත්] දන්සල් සැකසුම් සුරැකීමට එකතු කිරීම
-        dansala: document.getElementById('adm-dansala').checked,
-        flv_vanilla: document.getElementById('adm-flv-vanilla').checked,
-        flv_chocolate: document.getElementById('adm-flv-chocolate').checked,
-        flv_strawberry: document.getElementById('adm-flv-strawberry').checked
+        bhakthi: document.getElementById('adm-bhakthi').checked
     };
     fetch(SCRIPT_URL, {
         method: 'POST', mode: 'no-cors',
@@ -397,4 +259,168 @@ function adminAddSong() {
         document.getElementById('new-song-title').value = "";
         document.getElementById('new-song-url').value = "";
     }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ================= 🍦 ICE CREAM DANSALA LOGIC =================
+let dansalaCounter = 138;
+let currentDansalaSong = "";
+let dansalaAudio = document.getElementById('global-dansala-audio');
+
+// fetchServerData එක ඇතුළෙන් නව දත්ත කියවීම (මෙය පවතින fetchServerData එකට බද්ධ වේ)
+const originalFetchServerData = fetchServerData;
+fetchServerData = function() {
+    fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+            // මුල් ක්‍රියාවලිය එලෙසම සිදුවේ
+            serverData = data;
+            
+            if (data.status === "UNAVAILABLE") return;
+
+            // 1. දන්සල සහ Flavors වල ON/OFF/UNAVAILABLE තත්ත්වය පාලනය
+            if (data.events) {
+                const e = data.events;
+                setBtnState('btn-dansala', e.dansala, "🍦 අයිස්ක්‍රීම් දන්සල");
+                
+                // Flavors පාලනය
+                document.getElementById('opt-vanilla').disabled = !e.flv_vanilla;
+                document.getElementById('opt-chocolate').disabled = !e.flv_chocolate;
+                document.getElementById('opt-strawberry').disabled = !e.flv_strawberry;
+            }
+
+            // 2. 138 සිට පටන් ගන්නා Live Counter එක Update කිරීම
+            if (data.dansala_count !== undefined) {
+                dansalaCounter = 138 + parseInt(data.dansala_count);
+                document.getElementById('live-counter').innerText = "🍦 දන්සලෙන් කාපු ගණන: " + dansalaCounter;
+            }
+
+            // 3. Global Sync Audio Loop (dansalsong1.mp3 / dansalsong2.mp3)
+            if (data.current_dansala_song && dansalaAudio) {
+                if (currentDansalaSong !== data.current_dansala_song) {
+                    currentDansalaSong = data.current_dansala_song;
+                    dansalaAudio.src = currentDansalaSong;
+                    syncDansalaAudio();
+                }
+            }
+
+            // පැරණි සිදුවීම් පාලනය
+            applyEventLocks();
+            if(data.songs && data.songs.length > 0 && serverData.songs.length === 0) setupBhakthiSongs();
+            if(data.kooduList) renderTree(data.kooduList);
+        }).catch(e => console.log("Dansala Fetch Error", e));
+};
+
+// ගෝලීයව හැමෝටම එකම වෙලාවට සින්දුව ඇසෙන Sync ලොජික් එක
+function syncDansalaAudio() {
+    if (!dansalaAudio || !currentDansalaSong) return;
+    dansalaAudio.load();
+    dansalaAudio.addEventListener('loadedmetadata', () => {
+        let now = Date.now() / 1000;
+        dansalaAudio.currentTime = now % dansalaAudio.duration;
+        if (document.getElementById('dansala-screen').classList.contains('active')) {
+            dansalaAudio.play().catch(e => console.log("Audio playing blocked"));
+        }
+    });
+}
+
+// 30ට අඩු අගයක සිට තත්පර 2.5න් 2.5ට පෝලිම අඩුවීමේ ක්‍රියාවලිය
+function joinDansalQueue() {
+    let flavor = document.getElementById('flavor-select').value;
+    let selectArea = document.getElementById('dansala-select-area');
+    let queueBox = document.getElementById('queue-box');
+    let qNum = document.getElementById('queue-number');
+    let qCount = document.getElementById('queue-count');
+    let msgText = document.getElementById('dansala-msg');
+
+    selectArea.style.display = 'none';
+    queueBox.style.display = 'block';
+
+    let myQueueNum = Math.floor(Math.random() * 800) + 100;
+    let peopleAhead = Math.floor(Math.random() * 15) + 10; // 30ට අඩු සසම්බල (Random) අංකයක්
+
+    qNum.innerText = "ඔබේ පෝලිම් අංකය: #" + myQueueNum;
+    qCount.innerText = "⏳ ඔබට ඉදිරියෙන් තව " + peopleAhead + " දෙනෙක් සිටී...";
+
+    let queueInterval = setInterval(() => {
+        peopleAhead--;
+        if (peopleAhead > 0) {
+            qCount.innerText = "⏳ ඔබට ඉදිරියෙන් තව " + peopleAhead + " දෙනෙක් සිටී...";
+        } else {
+            clearInterval(queueInterval);
+            queueBox.style.display = 'none';
+            
+            // ලස්සන CSS Animation එකක් සමඟ ප්‍රතිඵලය පෙන්වීම
+            msgText.innerHTML = `
+                <div class="animation-box">
+                    <h2 class="animate-bounce">🍦 සාදු! සාදු!</h2>
+                    <p style="color:#FFD700; font-size:18px;">මෙන්න ඔයාගේ ${flavor} අයිස්ක්‍රීම් එක!</p>
+                    <div class="rotating-icecream">🍦</div>
+                </div>`;
+            
+            // Google Sheet එකට දත්ත යවා සජීවීව Counter එක 1කින් වැඩි කිරීම
+            fetch(SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                body: JSON.stringify({action: 'increment_dansala'})
+            });
+        }
+    }, 2500);
+}
+
+// Screen මාරුවීමේදී සංගීතය පාලනය (පවතින showScreen එකට බද්ධ කිරීම)
+const originalShowScreen = showScreen;
+showScreen = function(id) {
+    originalShowScreen(id);
+    
+    if (id === 'dansala-screen') {
+        if (dansalaAudio && currentDansalaSong) {
+            let now = Date.now() / 1000;
+            dansalaAudio.currentTime = now % dansalaAudio.duration;
+            dansalaAudio.play().catch(e => console.log("Audio block"));
+        }
+    } else {
+        if (dansalaAudio) dansalaAudio.pause();
+    }
+};
+
+// Admin Control Panel එකේ Checkbox තත්ත්වයන් ලබාගැනීම
+const originalCheckAdmin = checkAdmin;
+checkAdmin = function() {
+    originalCheckAdmin();
+    if (document.getElementById('admin-panel').classList.contains('active')) {
+        document.getElementById('adm-dansala').checked = serverData.events.dansala || false;
+        document.getElementById('adm-flv-vanilla').checked = serverData.events.flv_vanilla || false;
+        document.getElementById('adm-flv-chocolate').checked = serverData.events.flv_chocolate || false;
+        document.getElementById('adm-flv-strawberry').checked = serverData.events.flv_strawberry || false;
+    }
+};
+
+// Admin සැකසුම් සුරැකීමේදී නව දත්ත ටිකද එකතු කිරීම
+function updateEventSettings() {
+    serverData.events = {
+        thorana: document.getElementById('adm-thorana').checked,
+        pahan: document.getElementById('adm-pahan').checked,
+        koodu: document.getElementById('adm-koodu').checked,
+        bhakthi: document.getElementById('adm-bhakthi').checked,
+        dansala: document.getElementById('adm-dansala').checked,
+        flv_vanilla: document.getElementById('adm-flv-vanilla').checked,
+        flv_chocolate: document.getElementById('adm-flv-chocolate').checked,
+        flv_strawberry: document.getElementById('adm-flv-strawberry').checked
+    };
+    fetch(SCRIPT_URL, {
+        method: 'POST', mode: 'no-cors',
+        body: JSON.stringify({action: 'update_events', events: serverData.events})
+    });
+    alert("සැකසුම් සාර්ථකව සුරකින ලදී! 💾");
 }
